@@ -1,6 +1,9 @@
 package com.deviget.challenge.minesweeper.api.response;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class SessionInfoRespose {
+	@ApiModelProperty(value="Secure token. It must be used on header X-Auth-Token")
 	private String token;
 
 	public SessionInfoRespose(String token) {
@@ -10,10 +13,6 @@ public class SessionInfoRespose {
 
 	public String getToken() {
 		return token;
-	}
-
-	public void setToken(String token) {
-		this.token = token;
 	}
 
 }

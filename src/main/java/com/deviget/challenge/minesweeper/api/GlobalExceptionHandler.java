@@ -31,7 +31,7 @@ import com.deviget.challenge.minesweeper.core.exceptions.UserAlreadyExistsExcept
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	private final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-	static class ExceptionResponse {
+	static public class ExceptionResponse {
 		public long timestamp;
 		public int status;
 		public String error;

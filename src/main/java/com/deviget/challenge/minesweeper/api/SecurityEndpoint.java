@@ -22,6 +22,12 @@ import com.deviget.challenge.minesweeper.core.model.User;
 import com.deviget.challenge.minesweeper.security.SessionManager;
 import com.deviget.challenge.minesweeper.security.UserSession;
 
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
 @RestController
 @RequestMapping(Endpoints.SECURITY_ROOT_PATH)
 @Validated
@@ -34,7 +40,17 @@ public class SecurityEndpoint extends AbstractEndpoints {
 	private UserRepository userRepository;
 	@Autowired
 	private UserService userService;
-	
+
+	@ApiOperation(value="Sign in on application and get a secure token to access")
+	@ApiImplicitParams(value= {
+			@ApiImplicitParam(name="username", value="Username"),
+			@ApiImplicitParam(name="password", value="password")
+	})
+	@ApiResponses(value= {
+			@ApiResponse(code=200, message="Sign-In successful"),
+			@ApiResponse(code=400, message="If there is any error on parameter validations (types, values, range, etc.)", response=GlobalExceptionHandler.ExceptionResponse.class),
+			@ApiResponse(code=401, message="If the user can not be authenticated", response=GlobalExceptionHandler.ExceptionResponse.class)
+	})
 	@PostMapping(Endpoints.SIGNIN_PATH)
 	public SessionInfoRespose signIn(
 			@RequestParam(name="username", required=true) String username,
@@ -50,6 +66,11 @@ public class SecurityEndpoint extends AbstractEndpoints {
 		return new SessionInfoRespose(session.getToken());
 	}
 
+	@ApiOperation(value="Sign out from the application")
+	@ApiResponses(value= {
+			@ApiResponse(code=200, message="Sign out successful"),
+			@ApiResponse(code=403, message="If the request does not have security header X-Auth-Token", response=GlobalExceptionHandler.ExceptionResponse.class)
+	})
 	@PostMapping(Endpoints.SIGNOUT_PATH)
 	public SessionInfoRespose signOut() {
 		UserSession session = currentSession().orElse(new UserSession());
@@ -57,6 +78,19 @@ public class SecurityEndpoint extends AbstractEndpoints {
 		return new SessionInfoRespose(session.getToken());
 	}
 
+	@ApiOperation(value="Create a new user/account into the application")
+	@ApiImplicitParams(value= {
+			@ApiImplicitParam(name="firstname", value="First name"),
+			@ApiImplicitParam(name="lastname", value="Last name"),
+			@ApiImplicitParam(name="username", value="Username"),
+			@ApiImplicitParam(name="password", value="Password")
+	})
+	@ApiResponses(value= {
+			@ApiResponse(code=200, message="Sign out successful"),
+			@ApiResponse(code=400, message="If there is any error on parameter validations (types, values, range, etc.)", response=GlobalExceptionHandler.ExceptionResponse.class),
+			@ApiResponse(code=403, message="If the request does not have security header X-Auth-Token", response=GlobalExceptionHandler.ExceptionResponse.class),
+			@ApiResponse(code=409, message="If username already exists", response=GlobalExceptionHandler.ExceptionResponse.class)
+	})
 	@PostMapping(Endpoints.SIGNUP_PATH)
 	public SignUpResponse signUp(
 			@RequestParam(name="firstname", required=true) String firstname,

@@ -17,6 +17,7 @@ import com.deviget.challenge.minesweeper.core.exceptions.GameOverException;
 import com.deviget.challenge.minesweeper.core.exceptions.InvalidOperationException;
 
 import io.netty.util.internal.ThreadLocalRandom;
+import io.swagger.annotations.ApiModelProperty;
 
 @Document
 public class Game {

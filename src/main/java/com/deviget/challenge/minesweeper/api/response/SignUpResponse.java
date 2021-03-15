@@ -1,6 +1,9 @@
 package com.deviget.challenge.minesweeper.api.response;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class SignUpResponse {
+	@ApiModelProperty(value="User identifier")
 	private String userId;
 	private String username;
 
@@ -14,16 +17,8 @@ public class SignUpResponse {
 		return userId;
 	}
 
-	public void setUserId(String userId) {
-		this.userId = userId;
-	}
-
 	public String getUsername() {
 		return username;
-	}
-
-	public void setUsername(String username) {
-		this.username = username;
 	}
 
 }
