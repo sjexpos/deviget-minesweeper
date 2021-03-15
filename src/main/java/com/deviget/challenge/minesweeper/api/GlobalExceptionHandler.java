@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -20,6 +21,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.deviget.challenge.minesweeper.core.exceptions.GameNotFoundException;
+import com.deviget.challenge.minesweeper.core.exceptions.UserAlreadyExistsException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -80,8 +82,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	protected ResponseEntity<Object> handleMissingServletRequestParameter(MissingServletRequestParameterException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
 		ExceptionResponse exceptionResponse = new ExceptionResponse();
 		exceptionResponse.timestamp = System.currentTimeMillis();
-		exceptionResponse.status = HttpStatus.NOT_FOUND.value();
-		exceptionResponse.error = HttpStatus.NOT_FOUND.getReasonPhrase();
+		exceptionResponse.status = HttpStatus.BAD_REQUEST.value();
+		exceptionResponse.error = HttpStatus.BAD_REQUEST.getReasonPhrase();
 		exceptionResponse.message = new Object() {
 			public String error = "Missing parameter";
 			public String field = ex.getParameterName();
@@ -89,6 +91,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		};
 		exceptionResponse.path = ServletUriComponentsBuilder.fromCurrentRequest().build().toString();
 		return handleExceptionInternal(ex, exceptionResponse, headers, status, request);
+	}
+
+	@ExceptionHandler(BadCredentialsException.class)
+	public final ResponseEntity<Object> handleUserNotFoundException(BadCredentialsException ex, WebRequest request) {
+		ExceptionResponse exceptionResponse = new ExceptionResponse();
+		exceptionResponse.timestamp = System.currentTimeMillis();
+		exceptionResponse.status = HttpStatus.UNAUTHORIZED.value();
+		exceptionResponse.error = HttpStatus.UNAUTHORIZED.getReasonPhrase();
+		exceptionResponse.message = new Object() {
+			public String error = ex.getClass().getSimpleName();
+			public String message = ex.getMessage();
+		};
+		exceptionResponse.path = ServletUriComponentsBuilder.fromCurrentRequest().build().toString();
+		return handleExceptionInternal(ex, exceptionResponse, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
 	}
 
 	@ExceptionHandler(GameNotFoundException.class)
@@ -105,5 +121,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		return handleExceptionInternal(ex, exceptionResponse, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
 	}
 
+	@ExceptionHandler(UserAlreadyExistsException.class)
+	public final ResponseEntity<Object> handleUserNotFoundException(UserAlreadyExistsException ex, WebRequest request) {
+		ExceptionResponse exceptionResponse = new ExceptionResponse();
+		exceptionResponse.timestamp = System.currentTimeMillis();
+		exceptionResponse.status = HttpStatus.CONFLICT.value();
+		exceptionResponse.error = HttpStatus.CONFLICT.getReasonPhrase();
+		exceptionResponse.message = new Object() {
+			public String error = ex.getClass().getSimpleName();
+			public String username = ex.getUsername();
+		};
+		exceptionResponse.path = ServletUriComponentsBuilder.fromCurrentRequest().build().toString();
+		return handleExceptionInternal(ex, exceptionResponse, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+	}
 	
 }

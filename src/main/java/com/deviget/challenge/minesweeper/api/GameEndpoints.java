@@ -22,7 +22,7 @@ import com.deviget.challenge.minesweeper.core.GameService;
 import com.deviget.challenge.minesweeper.core.exceptions.GameNotFoundException;
 
 @RestController
-@RequestMapping("game")
+@RequestMapping(Endpoints.GAME_ROOT_PATH)
 public class GameEndpoints {
 	private final Logger log = LoggerFactory.getLogger(GameEndpoints.class);
 
