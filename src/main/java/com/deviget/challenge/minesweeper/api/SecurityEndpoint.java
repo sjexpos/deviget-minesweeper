@@ -1,11 +1,13 @@
 package com.deviget.challenge.minesweeper.api;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,7 +24,8 @@ import com.deviget.challenge.minesweeper.security.UserSession;
 
 @RestController
 @RequestMapping(Endpoints.SECURITY_ROOT_PATH)
-public class SecurityEndpoint {
+@Validated
+public class SecurityEndpoint extends AbstractEndpoints {
 	private final Logger LOGGER = LoggerFactory.getLogger(SecurityEndpoint.class);
 	
 	@Autowired
@@ -49,21 +52,17 @@ public class SecurityEndpoint {
 
 	@PostMapping(Endpoints.SIGNOUT_PATH)
 	public SessionInfoRespose signOut() {
-		SecurityContext securityContext = SecurityContextHolder.getContext();
-		if (securityContext.getAuthentication() != null && securityContext.getAuthentication().getPrincipal() instanceof UserSession) {
-			UserSession session = (UserSession)securityContext.getAuthentication().getPrincipal();
-			this.sessionManager.destroySession(session);
-			new SessionInfoRespose(session.getToken());
-		}
-		return new SessionInfoRespose("");
+		UserSession session = currentSession().orElse(new UserSession());
+		this.sessionManager.destroySession(session);
+		return new SessionInfoRespose(session.getToken());
 	}
 
 	@PostMapping(Endpoints.SIGNUP_PATH)
 	public SignUpResponse signUp(
 			@RequestParam(name="firstname", required=true) String firstname,
 			@RequestParam(name="lastname", required=true) String lastname,
-			@RequestParam(name="username", required=true) String username,
-			@RequestParam(name="password", required=true) String password
+			@RequestParam(name="username", required=true) @NotBlank @Size(min=5) String username,
+			@RequestParam(name="password", required=true) @NotBlank @Size(min=8) String password
 			) throws UserAlreadyExistsException {
 		User user = this.userService.newUser(username, password, firstname, lastname);
 		return new SignUpResponse(user.getId(), user.getUsername());

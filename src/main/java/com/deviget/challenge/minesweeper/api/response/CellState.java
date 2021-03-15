@@ -3,8 +3,8 @@ package com.deviget.challenge.minesweeper.api.response;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum CellState {
-	HIDDEN("H"),
-	EMPTY("E"),
+	COVERED("C"),
+	UNCOVERED("U"),
 	FLAGGED("F"),
 	ONE("1"),
 	TWO("2"),
@@ -13,7 +13,8 @@ public enum CellState {
 	FIVE("5"),
 	SIX("6"),
 	SEVEN("7"),
-	EIGHT("8");
+	EIGHT("8"),
+	MINE("*");
 	
 	private String value;
 	
@@ -24,6 +25,15 @@ public enum CellState {
 	@JsonValue
 	public String toValue() {
 		return this.value;
+	}
+	
+	static public CellState fromValue(String value) {
+		for (CellState cs : values()) {
+			if (cs.value.equals(value)) {
+				return cs;
+			}
+		}
+		return null;
 	}
 	
 }

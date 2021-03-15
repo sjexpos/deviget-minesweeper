@@ -5,6 +5,9 @@ import java.io.PrintWriter;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -21,6 +24,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.deviget.challenge.minesweeper.core.exceptions.GameNotFoundException;
+import com.deviget.challenge.minesweeper.core.exceptions.InvalidOperationException;
 import com.deviget.challenge.minesweeper.core.exceptions.UserAlreadyExistsException;
 
 @ControllerAdvice
@@ -93,8 +97,38 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		return handleExceptionInternal(ex, exceptionResponse, headers, status, request);
 	}
 
+	@ExceptionHandler(ConstraintViolationException.class)
+	public final ResponseEntity<Object> handleConstraintViolationException(ConstraintViolationException ex, WebRequest request) {
+		ExceptionResponse exceptionResponse = new ExceptionResponse();
+		exceptionResponse.timestamp = System.currentTimeMillis();
+		exceptionResponse.status = HttpStatus.BAD_REQUEST.value();
+		exceptionResponse.error = HttpStatus.BAD_REQUEST.getReasonPhrase();
+		final List<Object> errorFields = new LinkedList<Object>();
+		for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
+			String param = "";
+			String[] tokens = violation.getPropertyPath().toString().split("\\.");
+			if (tokens.length > 1) {
+				String[] shortPath = new String[tokens.length-1];
+				System.arraycopy(tokens, 1, shortPath, 0, tokens.length-1);
+				param = String.join(".", shortPath);
+			}
+			final String rejectedParameter = param;
+			errorFields.add(new Object() {
+				public String parameter = rejectedParameter;
+				public String message = violation.getMessageTemplate();
+				public Object value = violation.getInvalidValue();
+			});
+		}
+		exceptionResponse.message = new Object() {
+			public String error = "Invalid parameters";
+			public Object[] fields = errorFields.toArray();
+		};
+		exceptionResponse.path = ServletUriComponentsBuilder.fromCurrentRequest().build().toString();
+		return handleExceptionInternal(ex, exceptionResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+	}
+	
 	@ExceptionHandler(BadCredentialsException.class)
-	public final ResponseEntity<Object> handleUserNotFoundException(BadCredentialsException ex, WebRequest request) {
+	public final ResponseEntity<Object> handleBadCredentialsException(BadCredentialsException ex, WebRequest request) {
 		ExceptionResponse exceptionResponse = new ExceptionResponse();
 		exceptionResponse.timestamp = System.currentTimeMillis();
 		exceptionResponse.status = HttpStatus.UNAUTHORIZED.value();
@@ -104,11 +138,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 			public String message = ex.getMessage();
 		};
 		exceptionResponse.path = ServletUriComponentsBuilder.fromCurrentRequest().build().toString();
-		return handleExceptionInternal(ex, exceptionResponse, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+		return handleExceptionInternal(ex, exceptionResponse, new HttpHeaders(), HttpStatus.UNAUTHORIZED, request);
 	}
 
 	@ExceptionHandler(GameNotFoundException.class)
-	public final ResponseEntity<Object> handleUserNotFoundException(GameNotFoundException ex, WebRequest request) {
+	public final ResponseEntity<Object> handleGameNotFoundException(GameNotFoundException ex, WebRequest request) {
 		ExceptionResponse exceptionResponse = new ExceptionResponse();
 		exceptionResponse.timestamp = System.currentTimeMillis();
 		exceptionResponse.status = HttpStatus.NOT_FOUND.value();
@@ -122,7 +156,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	}
 
 	@ExceptionHandler(UserAlreadyExistsException.class)
-	public final ResponseEntity<Object> handleUserNotFoundException(UserAlreadyExistsException ex, WebRequest request) {
+	public final ResponseEntity<Object> handleUserAlreadyExistsException(UserAlreadyExistsException ex, WebRequest request) {
 		ExceptionResponse exceptionResponse = new ExceptionResponse();
 		exceptionResponse.timestamp = System.currentTimeMillis();
 		exceptionResponse.status = HttpStatus.CONFLICT.value();
@@ -132,7 +166,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 			public String username = ex.getUsername();
 		};
 		exceptionResponse.path = ServletUriComponentsBuilder.fromCurrentRequest().build().toString();
-		return handleExceptionInternal(ex, exceptionResponse, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+		return handleExceptionInternal(ex, exceptionResponse, new HttpHeaders(), HttpStatus.CONFLICT, request);
+	}
+
+	@ExceptionHandler(InvalidOperationException.class)
+	public final ResponseEntity<Object> handleInvalidOperationException(InvalidOperationException ex, WebRequest request) {
+		ExceptionResponse exceptionResponse = new ExceptionResponse();
+		exceptionResponse.timestamp = System.currentTimeMillis();
+		exceptionResponse.status = HttpStatus.CONFLICT.value();
+		exceptionResponse.error = HttpStatus.CONFLICT.getReasonPhrase();
+		exceptionResponse.message = new Object() {
+			public String error = ex.getClass().getSimpleName();
+		};
+		exceptionResponse.path = ServletUriComponentsBuilder.fromCurrentRequest().build().toString();
+		return handleExceptionInternal(ex, exceptionResponse, new HttpHeaders(), HttpStatus.CONFLICT, request);
 	}
 	
 }

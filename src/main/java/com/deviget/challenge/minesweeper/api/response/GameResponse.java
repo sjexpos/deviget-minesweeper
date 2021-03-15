@@ -2,49 +2,36 @@ package com.deviget.challenge.minesweeper.api.response;
 
 import java.util.Date;
 
-import com.deviget.challenge.minesweeper.core.GameStatus;
+import com.deviget.challenge.minesweeper.core.model.Game;
 
 public class GameResponse {
-
 	private String id;
 	private Date start;
 	private Date end;
-	private GameStatus status;
+	private Game.State state;
 	
-	public GameResponse() {
+	public GameResponse(Game game) {
 		super();
+		this.id = game.getId();
+		this.start = game.getStart();
+		this.end = game.getEnd();
+		this.state = game.getState();
 	}
 
 	public String getId() {
 		return id;
 	}
 
-	public void setId(String id) {
-		this.id = id;
-	}
-
 	public Date getStart() {
 		return start;
-	}
-
-	public void setStart(Date start) {
-		this.start = start;
 	}
 
 	public Date getEnd() {
 		return end;
 	}
 
-	public void setEnd(Date end) {
-		this.end = end;
-	}
-
-	public GameStatus getStatus() {
-		return status;
-	}
-
-	public void setStatus(GameStatus status) {
-		this.status = status;
+	public Game.State getState() {
+		return state;
 	}
 
 }
