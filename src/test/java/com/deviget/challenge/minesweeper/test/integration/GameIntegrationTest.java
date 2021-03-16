@@ -1,8 +1,10 @@
 package com.deviget.challenge.minesweeper.test.integration;
 
-import java.time.LocalDate;
+import java.io.IOException;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -17,14 +19,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.deviget.challenge.minesweeper.api.response.GameResponse;
 import com.mongodb.MongoClient;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment=WebEnvironment.RANDOM_PORT)
-@TestPropertySource(locations = "classpath:application-integrationtest.properties")
+import redis.embedded.RedisServer;
+
+//@RunWith(SpringRunner.class)
+//@SpringBootTest(webEnvironment=WebEnvironment.RANDOM_PORT)
+//@TestPropertySource(locations = "classpath:application-integrationtest.properties")
 public class GameIntegrationTest {
 	private final Logger log = LoggerFactory.getLogger(GameIntegrationTest.class);
 
+	private static RedisServer redisServer = null;
+	
 	@Autowired
     private TestRestTemplate restTemplate;
 	
@@ -34,13 +41,24 @@ public class GameIntegrationTest {
 	@Value("${spring.data.mongodb.database}")
 	private String databaseName;
 
-	@Test
+//	@BeforeClass
+	public static void setup() throws IOException {
+		redisServer = new RedisServer(7000);
+		redisServer.start();
+	}
+	
+//	@AfterClass
+	public static void tearDown() {
+		redisServer.stop();
+	}
+	
+//	@Test
 	public void test() {
-//		this.mongoClient.getDatabase(this.databaseName).drop();
+		this.mongoClient.getDatabase(this.databaseName).drop();
 
 		log.info("Checking full game");
-//		ResponseEntity<GameResponse> response = this.restTemplate.getForEntity("/game", GameResponse.class);
-//		Assert.assertEquals("Endpoint response was not status 200!", response.getStatusCode(), HttpStatus.OK);
+		ResponseEntity<GameResponse> response = this.restTemplate.getForEntity("/api/game", GameResponse.class);
+		Assert.assertEquals("Endpoint response was not status 200!", response.getStatusCode(), HttpStatus.OK);
 
 	}	
 

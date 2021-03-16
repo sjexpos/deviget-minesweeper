@@ -13,3 +13,7 @@ when application start up, it will be running on localhost:8080.
 This application has swagger, so you can do requests through swagger UI
 
 		http://localhost:8080/swagger-ui.html#/
+
+		
+		# && mvn clean && mvn -DskipTests -Dspring.data.mongodb.username=root -Dspring.data.mongodb.password=example spring-boot:run"
+		
