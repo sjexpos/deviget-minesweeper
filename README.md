@@ -14,6 +14,4 @@ This application has swagger, so you can do requests through swagger UI
 
 		http://localhost:8080/swagger-ui.html#/
 
-		
-		# && mvn clean && mvn -DskipTests -Dspring.data.mongodb.username=root -Dspring.data.mongodb.password=example spring-boot:run"
-		
+
